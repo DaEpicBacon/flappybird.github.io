@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flappy Bird</title>
+    <style>
+        #game-area {
+            position: relative;
+            width: 400px;
+            height: 500px;
+            border: 1px solid black;
+            margin: 0 auto;
+            overflow: hidden;
+            background-image: url("https://cdn.discordapp.com/attachments/1099335510180245565/1104364212588908554/pixeliscools.png");
+            background-size: cover;
+        }
+        #bird {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-image: url("https://cdn.discordapp.com/attachments/1099335510180245565/1104361887019319386/png-transparent-infinity-flappy-bird-flappy-bird-blue-flying-flappy-android-game-text-rectangle-thumbnail.png");
+            top: 50%;
+            left: 50px;
+            transform: translateY(-50%);
+        }
+        .pipe {
+            position: absolute;
+            width: 60px;
+            background-image: url("https://cdn.discordapp.com/attachments/1099335510180245565/1104361869633912842/Screenshot_2023-05-06_205820.png");
+        }
+        .top-pipe {
+            top: 0;
+        }
+        .bottom-pipe {
+            bottom: 0;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var bird = document.getElementById("bird");
+            var gameArea = document.getElementById("game-area");
+            var scoreDisplay = document.getElementById("score");
+
+            var gravity = 0.3;
+            var velocity = 0;
+            var position = 200;
+            var gap = 150;
+            var score = 0;
+            var isGameOver = false;
+
+            function flap() {
+                if (isGameOver) return;
+                velocity -= 7;
+            }
+
+            document.addEventListener("click", flap);
+            document.addEventListener("keydown", function(event) {
+                if (event.code === "Space") {
+                    event.preventDefault();
+                    flap();
+                }
+            });
+
+            function gameLoop() {
+                if (isGameOver) return;
+
+                velocity += gravity;
+                position += velocity;
+
+                bird.style.top = position + "px";
+
+                if (position < 0 || position > gameArea.offsetHeight) {
+                    gameOver();
+                }
+
+                var pipes = document.getElementsByClassName("pipe");
+                for (var i = 0; i < pipes.length; i++) {
+                    var pipe = pipes[i];
+                    var pipeLeft = parseInt(pipe.style.left);
+
+                    if (pipeLeft === 200) {
+                        score++;
+                        scoreDisplay.textContent = "Score: " + score;
+                    }
+
+                    if (pipeLeft < -60) {
+                        pipe.parentElement.removeChild(pipe);
+                    }
+
+                    pipe.style.left = pipeLeft - 2 + "px";
+
+                    if (
+                        position > pipe.offsetTop &&
+                        position < pipe.offsetTop + pipe.offsetHeight &&
+                        pipeLeft < 120 &&
+                        pipeLeft + 60 > 80
+                    ) {
+                        gameOver();
+                    }
+                }
+
+                requestAnimationFrame(gameLoop);
+            }
+
+            function createPipes() {
+                var pipeHeight = Math.floor(Math.random() * 200) + 50;
+                var topPipe = document.createElement("div");
+                topPipe.classList.add("pipe", "top-pipe");
+                topPipe.style.left = gameArea.offsetWidth + "px";
+                topPipe.style.height = pipeHeight + "px";
+                gameArea.appendChild(topPipe);
+
+                var bottomPipe = document.createElement("div");
+                bottomPipe.classList.add("pipe", "bottom-pipe");
+                bottomPipe.style.left = gameArea.offsetWidth + "px";
+                bottomPipe.style.height = gameArea.offsetHeight - pipeHeight - gap + "px";
+                gameArea.appendChild(bottomPipe);
+            }
+
+            function gameOver() {
+                isGameOver = true;
+                alert("Game Over! Your score is: " + score);
+                location.reload(); // Restart the game
+            }
+
+            setInterval(createPipes, 2000); // Create pipes every 2 seconds
+            gameLoop();
+        });
+    </script>
+</head>
+<body>
+    <div id="game-area">
+        <div id="bird"></div>
+        <div id="score">Score: 0</div>
+    </div>
+</body>
+</html>
